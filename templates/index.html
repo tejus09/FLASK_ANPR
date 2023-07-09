@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ANPR: Automatic Number Plate Recognition</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            margin: 20px auto;
+            width: 400px;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+        }
+        .form-group input[type="file"] {
+            width: 100%;
+        }
+        .form-group button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .result-container {
+            margin-top: 20px;
+        }
+        .image-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .image-container img {
+            display: inline-block;
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ANPR: Automatic Number Plate Recognition</h1>
+        <form action="/v1/process-image" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="image">Upload Image:</label>
+                <input type="file" id="image" name="image">
+            </div>
+            <div class="form-group">
+                <button type="submit">Process Image</button>
+            </div>
+        </form>
+        <div class="image-container">
+            <h2>Uploaded Image:</h2>
+            <img id="uploaded-image" src="#" alt="Uploaded Image">
+        </div>
+        <div class="result-container">
+            <h2>Results:</h2>
+            <pre id="result"></pre>
+        </div>
+    </div>
+    <script>
+        const form = document.querySelector('form');
+        const uploadedImage = document.querySelector('#uploaded-image');
+        const result = document.querySelector('#result');
+        const resultContainer = document.querySelector('.result-container');
+        const imageContainer = document.querySelector('.image-container');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            resultContainer.style.display = 'block';
+            imageContainer.style.display = 'block';
+            result.textContent = 'Processing...';
+
+            const formData = new FormData(form);
+
+            fetch('/v1/process-image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const plate = data.results[0].plate;
+                result.textContent = `Plate: ${plate}`;
+
+                // Display the uploaded image
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    uploadedImage.src = event.target.result;
+                };
+                reader.readAsDataURL(form.image.files[0]);
+            })
+            .catch(error => {
+                console.error(error);
+                result.textContent = 'An error occurred while processing the image.';
+            });
+        });
+    </script>
+</body>
+</html>
